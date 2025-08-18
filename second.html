@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multi ESP32 Control</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: black;
+    }
+    .esp-container {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .off-btn {
+      background-color: #333;
+      color: white;
+    }
+    h1, h2 {
+      text-align: center;
+      color: white;
+    }
+    #picker {
+      margin: 10px 0;
+    }
+    .color-picker-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="esp-container">
+    <h1>ESP32 #1</h1>
+    <button onclick="sendColor('192.168.43.135','ff0000')" style="background-color: red;
+                                                                  color: white;
+                                                                  border-radius: 10px;
+                                                                  font-size: 20px;
+                                                                  border: none;">Red</button>
+    <button onclick="sendColor('192.168.43.135','00ff00')" style="background-color: green;
+                                                                  color: white;
+                                                                  border-radius: 10px;
+                                                                  font-size: 20px;
+                                                                  border: none;">Green</button>
+    <button class="off-btn" onclick="sendColor('192.168.43.135','000000')">Turn Off</button>
+  </div>
+  
+  <div class="esp-container">
+    <h1>ESP32 #2</h1>
+    <button onclick="sendColor('192.168.43.252','0000ff')" style="background-color: blue;
+                                                                  color: white;
+                                                                  border-radius: 10px;
+                                                                  font-size: 20px;
+                                                                  border: none;">Blue</button>
+    <button onclick="sendColor('192.168.43.252','ffffff')" style="background-color: white;
+                                                                  color: black;
+                                                                  border-radius: 10px;
+                                                                  font-size: 20px;
+                                                                  border: none;">White</button>
+    <button class="off-btn" onclick="sendColor('192.168.43.252','000000')">Turn Off</button>
+  </div>
+
+  <div class="color-picker-section">
+    <h2>Pick Any Color</h2>
+    <input type="color" id="picker" value="#ff0000" oninput="sendColorToBoth(this.value)">
+    <button class="off-btn" onclick="turnOffBoth()">Turn Both Off</button>
+  </div>
+
+  <script>
+    function sendColor(ip, hex){
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET","http://" + ip + "/setcolor?hex=" + hex,true);
+      xhr.send();
+    }
+
+    function sendColorToBoth(hex){
+      hex = hex.substring(1); // remove #
+      sendColor("192.168.43.135", hex);
+      sendColor("192.168.43.252", hex);
+    }
+    
+    function turnOffBoth() {
+      sendColor("192.168.43.135", "000000");
+      sendColor("192.168.43.252", "000000");
+      document.getElementById('picker').value = '#000000'; // Update color picker
+    }
+  </script>
+</body>
+</html>
