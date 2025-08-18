@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Multi ESP32 Control</title>
+  <title>Multi ESP32 Controlll</title>
   <style>
     .esp-container {
       margin-bottom: 20px;
@@ -27,12 +27,14 @@
     <h1>ESP32 #1</h1>
     <button onclick="sendColor('192.168.43.135','ff0000')">Red</button>
     <button onclick="sendColor('192.168.43.135','00ff00')">Green</button>
+    <button class="off-btn" onclick="sendColor('192.168.43.135','000000')">Turn Off</button>
   </div>
   
   <div class="esp-container">
     <h1>ESP32 #2</h1>
     <button onclick="sendColor('192.168.43.252','0000ff')">Blue</button>
     <button onclick="sendColor('192.168.43.252','ffffff')">White</button>
+    <button class="off-btn" onclick="sendColor('192.168.43.252','000000')">Turn Off</button>
   </div>
 
   <h2>Pick Any Color</h2>
