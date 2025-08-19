@@ -8,57 +8,57 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Changed from center to start */
+    justify-content: flex-start;
     min-height: 100vh;
     margin: 0;
-    padding: 10px; /* Reduced padding */
+    padding: 10px;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
     background-color: black;
     width: 100%;
-    font-size: 14px; /* Smaller base font size */
+    font-size: 14px;
   }
   
   .esp-container {
-    margin-bottom: 15px; /* Reduced margin */
-    padding: 10px; /* Reduced padding */
-    border: 1px solid #444; /* Darker border */
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #444;
     border-radius: 5px;
-    max-width: 300px; /* Narrower container */
-    width: 90%; /* Percentage width */
+    max-width: 300px;
+    width: 90%;
     text-align: center;
   }
   
   button {
-    padding: 8px 12px; /* Smaller padding */
-    margin: 4px; /* Reduced margin */
-    font-size: 14px; /* Smaller font */
+    padding: 8px 12px;
+    margin: 4px;
+    font-size: 14px;
     cursor: pointer;
-    min-width: 0; /* Allow buttons to shrink */
+    min-width: 0;
   }
   
   .off-btn {
     background-color: #333;
     color: white;
-    padding: 8px 12px; /* Consistent with other buttons */
-    font-size: 14px; /* Consistent with other buttons */
+    padding: 8px 12px;
+    font-size: 14px;
   }
   
   h1 {
-    font-size: 18px; /* Smaller heading */
-    margin: 8px 0; /* Reduced margin */
+    font-size: 18px;
+    margin: 8px 0;
     color: white;
   }
   
   h2 {
-    font-size: 16px; /* Smaller subheading */
-    margin: 8px 0; /* Reduced margin */
+    font-size: 16px;
+    margin: 8px 0;
     color: white;
   }
   
   #picker {
-    margin: 8px 0; /* Reduced margin */
-    width: 80px; /* Smaller color picker */
+    margin: 8px 0;
+    width: 80px;
     height: 40px;
   }
   
@@ -66,17 +66,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 15px; /* Reduced margin */
-    width: 90%; /* Consistent with containers */
+    margin-top: 15px;
+    width: 90%;
     max-width: 300px;
   }
   
-  /* Remove inline styles from buttons and use classes instead */
   .color-btn {
-    border-radius: 8px; /* Slightly smaller radius */
-    font-size: 14px !important; /* Override inline style */
+    border-radius: 8px;
+    font-size: 14px !important;
     border: none;
-    padding: 8px 12px !important; /* Override potential inline styles */
+    padding: 8px 12px !important;
   }
 </style>
 </head>
@@ -113,7 +112,7 @@
     }
 
     function sendColorToBoth(hex){
-      hex = hex.substring(1); // remove #
+      hex = hex.substring(1);
       sendColor("192.168.43.135", hex);
       sendColor("192.168.43.252", hex);
     }
@@ -121,7 +120,7 @@
     function turnOffBoth() {
       sendColor("192.168.43.135", "000000");
       sendColor("192.168.43.252", "000000");
-      document.getElementById('picker').value = '#000000'; // Update color picker
+      document.getElementById('picker').value = '#000000';
     }
   </script>
 </body>
