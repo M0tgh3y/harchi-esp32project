@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Reaction Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #fdbb2d;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            width: 45%;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #fdbb2d;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .devices {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+        }
+        
+        .device {
+            width: 45%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .device.active {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+        
+        .device.failed {
+            background: rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+        
+        .device h3 {
+            margin-bottom: 10px;
+            color: #fdbb2d;
+        }
+        
+        .device-status {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            min-height: 30px;
+        }
+        
+        .controls {
+            margin: 25px 0;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-start {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+        
+        .btn-stop {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+        }
+        
+        .results {
+            margin-top: 25px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .results h3 {
+            color: #fdbb2d;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .result-item {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .success {
+            color: #00ff00;
+        }
+        
+        .failed-text {
+            color: #ff4444;
+        }
+        
+        .instructions {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            color: #fdbb2d;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        @media (max-width: 600px) {
+            .game-info, .devices {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .info-box, .device {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ESP32 Reaction Timer</h1>
+        <p class="subtitle">Test your reflexes with the ESP32 devices</p>
+        
+        <div class="game-info">
+            <div class="info-box">
+                <div class="info-label">TIME REMAINING</div>
+                <div class="info-value" id="timeLeft">40s</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">REACTION TESTS</div>
+                <div class="info-value" id="testsCount">0/5</div>
+            </div>
+        </div>
+        
+        <div class="devices">
+            <div class="device" id="device1">
+                <h3>ESP32 #1</h3>
+                <div class="device-status" id="status1">OFF</div>
+            </div>
+            <div class="device" id="device2">
+                <h3>ESP32 #2</h3>
+                <div class="device-status" id="status2">OFF</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn" class="btn btn-start">START TEST</button>
+            <button id="stopBtn" class="btn btn-stop" style="display: none;">STOP TEST</button>
+        </div>
+        
+        <div class="results">
+            <h3>TEST RESULTS</h3>
+            <div id="resultsList">No tests completed yet</div>
+        </div>
+        
+        <div class="instructions">
+            <h3>HOW TO PLAY</h3>
+            <ul>
+                <li>Press START TEST to begin the 40-second game</li>
+                <li>Every 5 seconds, one ESP32 will light up randomly</li>
+                <li>You have 2 seconds to touch the touch pin on the lit ESP32</li>
+                <li>If you touch it in time, your reaction time is recorded</li>
+                <li>If you don't touch it in time, it's recorded as failed</li>
+                <li>The test includes 8 rounds in total</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let gameActive = false;
+        let gameTimer;
+        let roundTimer;
+        let timeLeft = 40;
+        let testsCount = 0;
+        let totalTests = 5;
+        let currentDevice = null;
+        let roundStartTime = 0;
+        let results = [];
+        
+        // DOM elements
+        const timeLeftEl = document.getElementById('timeLeft');
+        const testsCountEl = document.getElementById('testsCount');
+        const device1El = document.getElementById('device1');
+        const device2El = document.getElementById('device2');
+        const status1El = document.getElementById('status1');
+        const status2El = document.getElementById('status2');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultsListEl = document.getElementById('resultsList');
+        
+        // ESP32 IP addresses
+        const esp1IP = '192.168.43.135';
+        const esp2IP = '192.168.43.252';
+        
+        // Initialize the game
+        function initGame() {
+            // Turn off both devices initially
+            sendColor(esp1IP, '000000');
+            sendColor(esp2IP, '000000');
+            
+            // Set up event listeners
+            startBtn.addEventListener('click', startGame);
+            stopBtn.addEventListener('click', stopGame);
+        }
+        
+        // Start the game
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            timeLeft = 40;
+            testsCount = 0;
+            results = [];
+            updateResults();
+            
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            
+            timeLeftEl.textContent = timeLeft + 's';
+            testsCountEl.textContent = testsCount + '/' + totalTests;
+            
+            // Start the main game timer (40 seconds)
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                timeLeftEl.textContent = timeLeft + 's';
+                
+                if (timeLeft <= 0) {
+                    stopGame();
+                }
+            }, 1000);
+            
+            // Start the first round
+            startRound();
+        }
+        
+        // Stop the game
+        function stopGame() {
+            if (!gameActive) return;
+            
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearTimeout(roundTimer);
+            
+            // Turn off both devices
+            sendColor(esp1IP, '000000');
+            sendColor(esp2IP, '000000');
+            
+            // Reset device displays
+            device1El.classList.remove('active', 'failed');
+            device2El.classList.remove('active', 'failed');
+            status1El.textContent = 'OFF';
+            status2El.textContent = 'OFF';
+            
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            
+            // Show final message
+            if (results.length > 0) {
+                const successful = results.filter(r => r.success).length;
+                resultsListEl.innerHTML = `<div class="result-item">Game finished! ${successful} successful out of ${results.length} tests</div>` + resultsListEl.innerHTML;
+            }
+        }
+        
+        // Start a new round
+        function startRound() {
+            if (!gameActive || testsCount >= totalTests) return;
+            
+            testsCount++;
+            testsCountEl.textContent = testsCount + '/' + totalTests;
+            
+            // Turn off both devices
+            sendColor(esp1IP, '000000');
+            sendColor(esp2IP, '000000');
+            device1El.classList.remove('active', 'failed');
+            device2El.classList.remove('active', 'failed');
+            status1El.textContent = 'OFF';
+            status2El.textContent = 'OFF';
+            
+            // Wait for 5 seconds before activating a device
+            roundTimer = setTimeout(() => {
+                if (!gameActive) return;
+                
+                // Randomly choose a device to activate
+                currentDevice = Math.random() > 0.5 ? 1 : 2;
+                
+                // Record the start time for reaction measurement
+                roundStartTime = Date.now();
+                
+                // Light up the chosen device (green)
+                if (currentDevice === 1) {
+                    sendColor(esp1IP, '00ff00');
+                    device1El.classList.add('active');
+                    status1El.textContent = 'ACTIVE - TOUCH NOW!';
+                } else {
+                    sendColor(esp2IP, '00ff00');
+                    device2El.classList.add('active');
+                    status2El.textContent = 'ACTIVE - TOUCH NOW!';
+                }
+                
+                // Set timeout for 2 seconds to check if the device was touched
+                roundTimer = setTimeout(() => {
+                    if (!gameActive) return;
+                    
+                    // If we reach here, the device wasn't touched in time
+                    if (currentDevice === 1) {
+                        device1El.classList.remove('active');
+                        device1El.classList.add('failed');
+                        status1El.textContent = 'FAILED - Not touched';
+                    } else {
+                        device2El.classList.remove('active');
+                        device2El.classList.add('failed');
+                        status2El.textContent = 'FAILED - Not touched';
+                    }
+                    
+                    // Record failed attempt
+                    results.push({
+                        test: testsCount,
+                        success: false,
+                        device: currentDevice,
+                        time: 'N/A'
+                    });
+                    updateResults();
+                    
+                    // Wait 1 second, then start a new round if game is still active
+                    if (testsCount < totalTests) {
+                        roundTimer = setTimeout(startRound, 1000);
+                    }
+                }, 2000);
+            }, 5000);
+        }
+        
+        // This function would be called when a touch is detected on the ESP32
+        function deviceTouched(deviceNum) {
+            if (!gameActive || deviceNum !== currentDevice) return;
+            
+            // Clear the timeout that would mark this as failed
+            clearTimeout(roundTimer);
+            
+            // Calculate reaction time
+            const reactionTime = (Date.now() - roundStartTime) / 1000;
+            const formattedTime = reactionTime.toFixed(2) + 's';
+            
+            // Record the result
+            results.push({
+                test: testsCount,
+                success: true,
+                device: deviceNum,
+                time: formattedTime
+            });
+            updateResults();
+            
+            // Visual feedback
+            if (deviceNum === 1) {
+                status1El.textContent = 'SUCCESS: ' + formattedTime;
+            } else {
+                status2El.textContent = 'SUCCESS: ' + formattedTime;
+            }
+            
+            // Wait 1 second, then start a new round if game is still active
+            if (testsCount < totalTests) {
+                roundTimer = setTimeout(startRound, 1000);
+            }
+        }
+        
+        // Update the results display
+        function updateResults() {
+            if (results.length === 0) {
+                resultsListEl.innerHTML = 'No tests completed yet';
+                return;
+            }
+            
+            let html = '';
+            results.slice().reverse().forEach(result => {
+                html += `<div class="result-item">
+                    <span>Test ${result.test}: Device ${result.device}</span>
+                    <span class="${result.success ? 'success' : 'failed-text'}">
+                        ${result.success ? result.time : 'FAILED'}
+                    </span>
+                </div>`;
+            });
+            
+            resultsListEl.innerHTML = html;
+        }
+        
+        // Send color to ESP32
+        function sendColor(ip, hex) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://" + ip + "/setcolor?hex=" + hex, true);
+            xhr.send();
+        }
+        
+        // Initialize the game when the page loads
+        window.onload = initGame;
+        
+        // Poll ESP32 devices for touch status
+        function pollDevices() {
+            if (!gameActive) return;
+            
+            // Check ESP32 #1
+            fetch(`http://${esp1IP}/touchstatus`)
+                .then(response => response.text())
+                .then(text => {
+                    if (text === "touched") {
+                        deviceTouched(1);
+                    }
+                })
+                .catch(err => console.log("Error polling ESP32 #1:", err));
+                
+            // Check ESP32 #2
+            fetch(`http://${esp2IP}/touchstatus`)
+                .then(response => response.text())
+                .then(text => {
+                    if (text === "touched") {
+                        deviceTouched(2);
+                    }
+                })
+                .catch(err => console.log("Error polling ESP32 #2:", err));
+        }
+        
+        // Start polling devices if game is active
+        setInterval(pollDevices, 300);
+    </script>
+</body>
+</html>
