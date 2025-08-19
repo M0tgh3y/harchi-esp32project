@@ -5,7 +5,7 @@
 
 // Configuration - customize these for each ESP32
 
-const int deviceNumber = 1; // Change to 2 for the second ESP32
+const int deviceNumber = 2; // Change to 2 for the second ESP32
 
 WebServer server(80);
 // WS2812 LED configuration
@@ -38,8 +38,8 @@ void setup() {
     ESP.restart(); // Reset and try again
     delay(5000);
   }
-
   //************
+  
   Serial.println();
   Serial.print("Connected! IP address: ");
   Serial.println(WiFi.localIP());

@@ -1,11 +1,11 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <FastLED.h>
+#include <WiFiManager.h>
 
 // Configuration - customize these for each ESP32
-const char* ssid = "Lalala";
-const char* password = "";
-const int deviceNumber = 2; // Change to 2 for the second ESP32
+
+const int deviceNumber = 1; // Change to 2 for the second ESP32
 
 WebServer server(80);
 // WS2812 LED configuration
@@ -21,20 +21,22 @@ void setup() {
   // Initialize LED strip
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(100);  // Initial brightness (0-255)
+
+  //***************
+  WiFiManager wifiManager;
   
-  // Connect to WiFi
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    // Blink LED during connection
-    leds[0] = CRGB::Blue;
-    FastLED.show();
-    delay(100);
-    leds[0] = CRGB::Black;
-    FastLED.show();
+  // Set timeout until configuration portal gets turned off
+  wifiManager.setTimeout(180); // 3 minutes
+  
+  // Start configuration portal with a custom name
+  if(!wifiManager.autoConnect("ESP32_LED_Controller")) {
+    Serial.println("Failed to connect and hit timeout");
+    delay(3000);
+    ESP.restart(); // Reset and try again
+    delay(5000);
   }
+  //************
+  
   Serial.println();
   Serial.print("Connected! IP address: ");
   Serial.println(WiFi.localIP());
